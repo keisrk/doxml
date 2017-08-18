@@ -84,7 +84,7 @@ node_map = {
     'description'    :(lambda x: setup(x, nodes.description())),
     'literal_block'  :(lambda x: code_setup(x, nodes.literal_block())),
     'doctest_block'  :(lambda x: setup(x, nodes.doctest_block())),
-    'math_block'     :(lambda x: setup(x, mathbase.displaymath(latex=x.text, label=None, nowrap=None))), 
+    'math_block'     :(lambda x: setup(x, mathbase.displaymath(latex=x.text, number=None, label=None, nowrap=None))), 
     'line_block'     :(lambda x: setup(x, nodes.line_block())),
     'line'           :(lambda x: setup(x, nodes.line())),
     'block_quote'    :(lambda x: setup(x, nodes.block_quote())),
