@@ -13,12 +13,12 @@ def setup(x, d):
         else:
             d[k] = v
     return d
-
-def math_setup(x):
-    math = nodes.math()
-    math['latex'] = x.text
-    x.text = None
-    return math
+# 
+# def math_setup(x):
+#     math = nodes.math()
+#     math['latex'] = x.text
+#     x.text = None
+#     return math
 
 def code_setup(x, d):
     classes = x.attrib.get('classes')
@@ -130,7 +130,7 @@ leaf_map = {
     'acronym'        :(lambda x: setup(x, nodes.acronym())),
     'superscript'    :(lambda x: setup(x, nodes.superscript())),
     'subscript'      :(lambda x: setup(x, nodes.subscript())),
-    'math'           :(lambda x: setup(x, nodes.math(latex=x.text))), 
+    'math'           :(lambda x: setup(x, nodes.math(latex=x.text)) if x.text is not None else setup(x, nodes.math(latex='None'))), 
     'image'          :(lambda x: setup(x, nodes.image())), 
     'inline'         :(lambda x: setup(x, nodes.inline())), 
     'problematic'    :(lambda x: setup(x, nodes.problematic())), 
