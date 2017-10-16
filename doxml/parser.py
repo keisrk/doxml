@@ -130,7 +130,7 @@ leaf_map = {
     'acronym'        :(lambda x: setup(x, nodes.acronym())),
     'superscript'    :(lambda x: setup(x, nodes.superscript())),
     'subscript'      :(lambda x: setup(x, nodes.subscript())),
-    'math'           :(lambda x: setup(x, nodes.math(latex=x.text)) if x.text is not None else setup(x, nodes.math(latex='None'))), 
+    'math'           :(lambda x: setup(x, nodes.math(latex=x.text)) if x.text is not None else setup(x, nodes.math(latex='\mathit{None}'))), 
     'image'          :(lambda x: setup(x, nodes.image())), 
     'inline'         :(lambda x: setup(x, nodes.inline())), 
     'problematic'    :(lambda x: setup(x, nodes.problematic())), 
