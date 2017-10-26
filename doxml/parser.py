@@ -8,17 +8,12 @@ def setup(x, d):
     for k, v in x.items():
         if '{' in k and '}' in k:
             pass
-        elif 'classes' == k:
-            d[k] = [v]
+        # Every node.Element shares the attribute 'classes'.
+        elif 'classes' == k or 'class' == k:
+            d['classes'].append(v)
         else:
             d[k] = v
     return d
-# 
-# def math_setup(x):
-#     math = nodes.math()
-#     math['latex'] = x.text
-#     x.text = None
-#     return math
 
 def code_setup(x, d):
     classes = x.attrib.get('classes')
