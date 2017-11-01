@@ -5,12 +5,13 @@ from sphinx.ext import mathbase
 from docutils.utils.code_analyzer import Lexer, LexerError
 
 def setup(x, d):
+    common_attr = ['ids', 'names', 'dupnames', 'source', 'classes']
     for k, v in x.items():
         if '{' in k and '}' in k:
             pass
-        # Every node.Element shares the attribute 'classes'.
-        elif 'classes' == k or 'class' == k:
-            d['classes'].append(v)
+        # Every node.Element shares the common attributes.
+        elif k in common_attr:
+            d[k].append(v)
         else:
             d[k] = v
     return d
