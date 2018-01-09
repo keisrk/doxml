@@ -1,7 +1,6 @@
 import docutils.parsers
 from docutils import utils, nodes
 from xml.etree import ElementTree
-from sphinx.ext import mathbase
 from docutils.utils.code_analyzer import Lexer, LexerError
 
 def setup(x, d):
@@ -9,6 +8,8 @@ def setup(x, d):
     for k, v in x.items():
         if '{' in k and '}' in k:
             pass
+        elif k == 'class':
+            d['classes'].append(v)
         # Every node.Element shares the common attributes.
         elif k in common_attr:
             d[k].append(v)
@@ -80,7 +81,7 @@ node_map = {
     'description'    :(lambda x: setup(x, nodes.description())),
     'literal_block'  :(lambda x: code_setup(x, nodes.literal_block())),
     'doctest_block'  :(lambda x: setup(x, nodes.doctest_block())),
-    'math_block'     :(lambda x: setup(x, mathbase.displaymath(latex=x.text, number=None, label=None, nowrap=None))), 
+    'math_block'     :(lambda x: setup(x, nodes.math_block())), 
     'line_block'     :(lambda x: setup(x, nodes.line_block())),
     'line'           :(lambda x: setup(x, nodes.line())),
     'block_quote'    :(lambda x: setup(x, nodes.block_quote())),
@@ -126,7 +127,8 @@ leaf_map = {
     'acronym'        :(lambda x: setup(x, nodes.acronym())),
     'superscript'    :(lambda x: setup(x, nodes.superscript())),
     'subscript'      :(lambda x: setup(x, nodes.subscript())),
-    'math'           :(lambda x: setup(x, nodes.math(latex=x.text)) if x.text is not None else setup(x, nodes.math(latex='\mathit{None}'))), 
+    #'math'           :(lambda x: setup(x, nodes.math(latex=x.text)) if x.text is not None else setup(x, nodes.math(latex='\mathit{None}'))),     
+    'math'           :(lambda x: setup(x, nodes.math())), 
     'image'          :(lambda x: setup(x, nodes.image())), 
     'inline'         :(lambda x: setup(x, nodes.inline())), 
     'problematic'    :(lambda x: setup(x, nodes.problematic())), 
@@ -160,11 +162,20 @@ def nd_add(x, d):
         d.append(t)
     return t
 
-def xml_parse(init_fr):
-    fr = []
-    for px, d in init_fr:
-        fr += [(x, nd_add(x, d)) for x in px]
-    return fr
+def xml_parse(xrt, document):
+    for n in xrt:
+        t = nd_add(n, document)
+        xml_parse(n, t)
+
+def demote_title(xrt):
+    assert xrt.tag == 'document'
+    doc = ElementTree.Element('document')
+    sec = ElementTree.SubElement(doc, 'section')
+    for n in xrt:
+        if n.tag == 'title':
+            sec.set('ids', n.text + 'title')
+        sec.append(n)
+    return doc
 
 class XmlParser(docutils.parsers.Parser):
 
@@ -173,7 +184,12 @@ class XmlParser(docutils.parsers.Parser):
     supported = ('xml')
     """Aliases this parser supports."""
 
-    settings_spec = None
+    settings_spec=('Xml Parser Options',
+                   None,
+                   (('Enable sphinx math extensions',
+                     ['--sphinx-ext-enabled'],
+                     {'action': 'store_true', 'default': False}),
+                   ))
     config_section = 'xml parser'
     config_section_dependencies = ('parsers',)
 
@@ -185,9 +201,39 @@ class XmlParser(docutils.parsers.Parser):
         self.setup_parse(inputstring, document) #boilorplate
 
         xrt = ElementTree.fromstring(self.inputstring)
-        fr = [(xrt, self.document)]
-        while fr:
-            fr = xml_parse(fr)
+        """
+        if self.document.settings.sphinx_ext_enabled:
+            from sphinx.ext import mathbase
+            node_map['math_block'] = (lambda x: setup(x, mathbase.displaymath(latex=x.text, number=None, label=None, nowrap=None)))
+        else:
+            node_map['math_block'] = (lambda x: setup(x, nodes.math_block()))
+        """
+        if xrt[0].tag == 'title':
+            xrt = demote_title(xrt)
+        xml_parse(xrt, document)
 
         self.finish_parse() #boilorplate
 
+'''
+from doxml.parser import XmlParser
+import docutils
+
+xp = XmlParser()
+with open ("src/test01.xml", "r") as myfile:
+    data=myfile.read()
+settings = docutils.frontend.OptionParser(                 
+                components=(docutils.parsers.rst.Parser,)
+                ).get_default_values()
+document = docutils.utils.new_document(data, settings)
+'''
+
+'''
+tree = ElementTree.parse('src/test01.xml')
+xrt = tree.getroot()
+for n in xrt:
+     print(n)
+doc = demote_title(xrt)
+doc[0]
+for n in doc[0]:
+     print(n)
+'''
